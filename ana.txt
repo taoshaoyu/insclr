@@ -1,0 +1,68 @@
+statement:
+	stat_blank		# blank / '#' 
+	stat_common		# description / build action....
+	stat_attr		# '<attr> : <value>', <attr>: Name, Version, Release, URL....
+	stat_desc		# '%description'
+	stat_package	# '%package'
+	stat_prep		# '%prep'
+	stat_build		# '%build'
+	stat_install	# '%install'
+	stat_file		# '%file'
+
+status:
+	desc_package	# in stat_package
+	desc_desc		# in stat_desc
+	desc_prep		# in stat_prep
+	desc_build		# in stat_build
+	desc_install	# in stat_install
+	desc_file		# in stat_file
+
+
+FUNC: _is_blank( line )   
+	# start with '#', blank
+	# ret  T/F
+
+FUNC: _is_kw( line )   
+	# start with '%xxxx'
+	# return (statement, status)
+
+FUNC: _is_attr_set(line, obj)
+	# ' XXX: yyy'
+	# ret  T/F
+	if( xxx:yyy )
+		if xxx in attr_list:
+			func( obj, xxx, yyy )
+			ret T
+		else
+			ret F
+	ret F
+
+
+desc_package  ---( stat_blank, stat_attr)--  desc_package
+desc_package  ---( stat_desc )--			desc_desc
+desc_package  ---( stat_common)--			INVALID
+desc_package  ---( other ...)--			INVALID
+
+
+
+state = desc_package
+p
+while readline:
+	if _is_blank(line):	continue
+	switch state :
+		case desc_package:
+			state = handle_desc_package(line, pkgobj)
+		case desc_desc:  
+			state = handle_desc_desc(line, pkgobj)
+		case desc_prep:
+			state = handle_desc_prep(line, pkgobj)
+		case desc_build:
+			state = handle_desc_build(line, pkgobj)
+		case desc_install:
+			state = handle_desc_install(line, pkgobj)
+		case desc_file:
+			state = handle_desc_file(line,pkgobj)
+
+
+
+
